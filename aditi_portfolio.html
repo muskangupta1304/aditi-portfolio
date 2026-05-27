@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aditi Gupta — Mathematics Educator & Instructional Designer</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- 3D Background and Tilt Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0a1128;
+            --bg-darker: #050814;
+            --bg-light: #f8f9fa;
+            --accent: #fca311;
+            --accent-hover: #e5930f;
+            --text-light: #e6f1ff;
+            --text-dim: #8892b0;
+            --text-dark: #1e293b;
+            --font-heading: 'Lora', serif;
+            --font-body: 'Outfit', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            cursor: none; /* Custom cursor */
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--bg-darker);
+        }
+
+        /* Custom Cursor */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.2s, height 0.2s, background 0.2s;
+        }
+
+        body:hover .cursor-outline {
+            width: 50px;
+            height: 50px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+            z-index: 9998;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(10, 17, 40, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-logo span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-decoration: none;
+            position: relative;
+            transition: color 0.3s ease;
+            text-transform: lowercase;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
+        }
+
+        /* Interactive Hero Section */
+        #vanta-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        #hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 10%;
+            z-index: 1;
+            pointer-events: none; /* Let clicks pass to vanta if needed, though we have buttons */
+        }
+
+        .hero-content {
+            max-width: 800px;
+            pointer-events: auto;
+        }
+
+        .hero-tagline {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            display: block;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.2s forwards;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.4s forwards;
+            background: linear-gradient(135deg, #ffffff 0%, #a8b2d1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-title span {
+            font-style: italic;
+            background: linear-gradient(135deg, #fca311 0%, #ffcf7a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -webkit-text-stroke: 0;
+        }
+
+        .hero-desc {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.6s forwards;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.8s forwards;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fca311 0%, #e5930f 100%);
+            color: var(--bg-darker);
+            border: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(252, 163, 17, 0.2);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffcf7a 0%, #fca311 100%);
+            z-index: -1;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover::before {
+            opacity: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(252, 163, 17, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-light);
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Geometric scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            animation: fadeIn 1s 1.2s forwards;
+            pointer-events: auto;
+        }
+
+        .mouse {
+            width: 30px;
+            height: 50px;
+            border: 2px solid var(--text-dim);
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .wheel {
+            width: 4px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 2px;
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll 1.5s infinite;
+        }
+
+        /* General Section Styles */
+        section {
+            padding: 100px 10%;
+            position: relative;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .section-header.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-num {
+            font-family: var(--font-mono);
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--text-light);
+        }
+
+        .section-line {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            flex-grow: 1;
+        }
+
+        /* About Section */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .about-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dim);
+        }
+
+        .about-text p {
+            margin-bottom: 20px;
+        }
+
+        .about-text strong {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* 3D Skills Hexagons */
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .skill-badge {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--accent);
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.15);
+        }
+        
+        .skill-badge:hover {
+            border-color: rgba(252, 163, 17, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(252, 163, 17, 0.2);
+            background: rgba(252, 163, 17, 0.05);
+        }
+
+        /* Experience Timeline */
+        .timeline {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 30px;
+            padding-left: 80px;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.6s ease;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(252, 163, 17, 0.15);
+        }
+
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 21px;
+            top: 35px;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-dark);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover .timeline-icon {
+            background: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .exp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .exp-title {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .exp-org {
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-top: 5px;
+        }
+
+        .exp-date {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .exp-details {
+            list-style: none;
+        }
+
+        .exp-details li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .exp-details li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        /* 3D Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+            perspective: 1000px;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+        }
+
+        .project-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(252, 163, 17, 0.1), transparent 55%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .project-card:hover::before { opacity: 1; }
+
+        .project-card:hover {
+            border-color: rgba(252, 163, 17, 0.35);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(252,163,17,0.06);
+            transform: translateY(-6px);
+        }
+
+        /* Card Thumbnail */
+        .project-thumb {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .project-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s ease;
+        }
+
+        .project-card:hover .project-thumb img {
+            transform: scale(1.06);
+        }
+
+        .project-thumb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 30%, rgba(10,17,40,0.92) 100%);
+        }
+
+        /* Card Body */
+        .project-body {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .project-type {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .project-title {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .project-desc {
+            color: var(--text-dim);
+            font-size: 0.93rem;
+            line-height: 1.65;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
+        .project-tech span {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 9px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .project-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--accent);
+            font-weight: 500;
+            transition: gap 0.3s ease;
+            text-decoration: none;
+        }
+
+        .project-card:hover .project-cta { gap: 14px; }
+
+        /* Learning Design Portfolio Banner */
+        .ld-banner {
+            margin-top: 60px;
+            border: 1px solid rgba(252,163,17,0.25);
+            border-radius: 16px;
+            padding: 40px;
+            background: rgba(252,163,17,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .ld-banner.visible { opacity: 1; transform: translateY(0); }
+
+        .ld-banner-text h3 {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .ld-banner-text p {
+            color: var(--text-dim);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .ld-banner-link {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--bg-darker);
+            background: linear-gradient(135deg, #fca311, #e5930f);
+            padding: 14px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .ld-banner-link:hover {
+            box-shadow: 0 8px 25px rgba(252,163,17,0.4);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 700px) {
+            .ld-banner { flex-direction: column; text-align: center; }
+        }
+
+        /* Education & Certs */
+        .edu-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .edu-box {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--accent);
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px 12px 12px 8px;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .edu-box:hover {
+            transform: translateX(10px);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 8px 32px 0 rgba(252, 163, 17, 0.15);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .edu-degree {
+            font-family: var(--font-heading);
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .edu-uni {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        /* Contact Section */
+        #contact {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 150px 10% 200px;
+        }
+
+        .contact-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .contact-desc {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 50px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .social-links a {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            text-decoration: none;
+            font-family: var(--font-mono);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .social-links a:hover {
+            color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scroll {
+            0% { top: 8px; opacity: 1; }
+            100% { top: 25px; opacity: 0; }
+        }
+
+        /* Math Floating Elements */
+        @keyframes floatMath {
+            0% { transform: translateY(0px) rotate(0deg); opacity: 0.03; }
+            50% { transform: translateY(-30px) rotate(10deg); opacity: 0.08; }
+            100% { transform: translateY(0px) rotate(0deg); opacity: 0.03; }
+        }
+
+        .math-symbol {
+            position: absolute;
+            color: rgba(255, 255, 255, 1);
+            font-family: var(--font-heading);
+            font-size: 10rem;
+            pointer-events: none;
+            z-index: -1;
+            user-select: none;
+            animation: floatMath 8s ease-in-out infinite;
+        }
+        
+        .math-symbol:nth-child(even) {
+            animation-duration: 12s;
+            animation-direction: reverse;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .about-grid, .edu-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .exp-header {
+                flex-direction: column;
+            }
+            .exp-date {
+                margin-top: 5px;
+            }
+            section {
+                padding: 80px 5%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .timeline::before {
+                left: 15px;
+            }
+            .timeline-item {
+                padding-left: 50px;
+            }
+            .timeline-icon {
+                left: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="myBar"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="nav-logo">
+            <span>∑</span> Aditi.
+        </a>
+        <ul class="nav-links">
+            <li><a href="#about">01. About</a></li>
+            <li><a href="#experience">02. Experience</a></li>
+            <li><a href="#projects">03. Projects</a></li>
+            <li><a href="#education">04. Education</a></li>
+            <li><a href="#contact">05. Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section with Vanta.js Background -->
+    <div id="vanta-bg"></div>
+    <section id="hero">
+        <div class="hero-content">
+            <span class="hero-tagline">Hello, my name is</span>
+            <h1 class="hero-title">Aditi Gupta.<br><span>I design logic.</span></h1>
+            <p class="hero-desc">
+                I am a Mathematics Educator and Instructional Designer specialising in turning abstract mathematics into vivid, learner-centred experiences. I build competency-based models, game-based learning, and visual content.
+            </p>
+            <div class="btn-group">
+                <a href="#projects" class="btn btn-primary">View My Work</a>
+                <a href="#about" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Background Math Symbols -->
+    <div class="math-symbol" style="top: 120vh; left: 5%;">∫</div>
+    <div class="math-symbol" style="top: 250vh; right: 10%;">π</div>
+    <div class="math-symbol" style="top: 400vh; left: 8%;">∞</div>
+    <div class="math-symbol" style="top: 550vh; right: 5%;">Δ</div>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-header reveal">
+            <span class="section-num">01.</span>
+            <h2 class="section-title">About Me</h2>
+            <div class="section-line"></div>
+        </div>
+        
+        <div class="about-grid">
+            <div class="about-text reveal">
+                <p>
+                    I hold a <strong>Master's in Mathematics Education</strong> from the University of Delhi, driven by a passion to transform how students perceive and interact with numbers. 
+                </p>
+                <p>
+                    My professional journey spans building <strong>competency-based question banks</strong>, architecting <strong>game-based learning ecosystems</strong>, and developing immersive visual educational media that bridges the gap between abstract theory and real-world application.
+                </p>
+                <p>
+                    Whether collaborating with the NCERT, facilitating interactive workshops, or constructing MOOCs, I fuse <strong>deep subject-matter expertise with advanced pedagogical strategy</strong> to craft meaningful learning outcomes.
+                </p>
+            </div>
+            
+            <div class="skills-container reveal">
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">Instructional Design</div>
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">Curriculum Development</div>
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">Gamification</div>
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">Assessment Design</div>
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">Video Production</div>
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">GeoGebra</div>
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">Unity (GDD)</div>
+                <div class="skill-badge" data-tilt data-tilt-glare data-tilt-max-glare="0.5">Figma / Canva</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience">
+        <div class="section-header reveal">
+            <span class="section-num">02.</span>
+            <h2 class="section-title">Where I've Worked</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <div class="timeline">
+            <!-- Job 1 -->
+            <div class="timeline-item reveal">
+                <div class="timeline-icon"></div>
+                <div class="exp-header">
+                    <div>
+                        <h3 class="exp-title">Mathematics Content Developer</h3>
+                        <p class="exp-org">CountingWell</p>
+                    </div>
+                    <span class="exp-date">Apr 2025 – Oct 2025</span>
+                </div>
+                <ul class="exp-details">
+                    <li>Developed 200+ competency-based mathematics questions aligned with CBSE learning outcomes.</li>
+                    <li>Designed conceptual and application-based problems across Grades 11–12 curriculum.</li>
+                    <li>Simplified complex calculus and algebra topics into clear, step-by-step logical solutions.</li>
+                </ul>
+            </div>
+
+            <!-- Job 2 -->
+            <div class="timeline-item reveal">
+                <div class="timeline-icon"></div>
+                <div class="exp-header">
+                    <div>
+                        <h3 class="exp-title">Mathematics Intern</h3>
+                        <p class="exp-org">NCERT</p>
+                    </div>
+                    <span class="exp-date">Aug 2025 – Oct 2025</span>
+                </div>
+                <ul class="exp-details">
+                    <li>Assisted in architecting curriculum-aligned Mathematics learning materials for Grade 5.</li>
+                    <li>Collaborated with national subject experts on content structure and pedagogical accuracy.</li>
+                    <li>Contributed to extensive textbook analysis for the upcoming national curriculum review.</li>
+                </ul>
+            </div>
+
+            <!-- Job 3 -->
+            <div class="timeline-item reveal">
+                <div class="timeline-icon"></div>
+                <div class="exp-header">
+                    <div>
+                        <h3 class="exp-title">Mathematics Instructor (Senior Secondary)</h3>
+                        <p class="exp-org">Govt. Sarvodaya Vidyalaya</p>
+                    </div>
+                    <span class="exp-date">Apr 2025 – May 2025</span>
+                </div>
+                <ul class="exp-details">
+                    <li>Instructed Class 12 students, translating advanced mathematical concepts into digestible modules.</li>
+                    <li>Engineered lesson plans strictly aligned with the senior secondary CBSE curriculum standards.</li>
+                </ul>
+            </div>
+
+            <!-- Job 4 -->
+            <div class="timeline-item reveal">
+                <div class="timeline-icon"></div>
+                <div class="exp-header">
+                    <div>
+                        <h3 class="exp-title">Workshop Facilitator</h3>
+                        <p class="exp-org">MindGaps</p>
+                    </div>
+                    <span class="exp-date">Feb 2026 – Mar 2026</span>
+                </div>
+                <ul class="exp-details">
+                    <li>Conducted hygiene awareness and cognitive development workshops in various schools.</li>
+                    <li>Delivered interactive sessions designed to strengthen communication and critical thinking.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects">
+        <div class="section-header reveal">
+            <span class="section-num">03.</span>
+            <h2 class="section-title">Some Things I've Built</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <div class="projects-grid">
+            <!-- Project 1: Mathematics Behind Nature -->
+            <a href="learning-design/mathematics-behind-nature.html" class="project-card reveal" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" style="transition-delay:0.1s">
+                <div class="project-thumb">
+                    <img src="maths beyond/img2.jpg" alt="Students exploring mathematics in nature">
+                </div>
+                <div class="project-body">
+                    <div class="project-type">Educational Film · Visual Storytelling</div>
+                    <h3 class="project-title">Mathematics Behind Nature</h3>
+                    <p class="project-desc">What if students could see mathematics before they solve it? A narrative film connecting river bends, spider webs, and soil cracks to geometry, curvature, and tessellation. Scripted, storyboarded, and directed for Grades 6–10.</p>
+                    <div class="project-tech">
+                        <span>Video Production</span><span>Storyboarding</span><span>Conceptual Design</span>
+                    </div>
+                    <span class="project-cta">Explore Project →</span>
+                </div>
+            </a>
+
+            <!-- Project 2: CalcQuest -->
+            <a href="learning-design/calcquest.html" class="project-card reveal" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" style="transition-delay:0.2s">
+                <div class="project-thumb">
+                    <img src="calcquest/img1.jpg" alt="CalcQuest game screenshot showing city navigation">
+                </div>
+                <div class="project-body">
+                    <div class="project-type">Game-Based Learning · Unity C#</div>
+                    <h3 class="project-title">CalcQuest — Integer Operations Game</h3>
+                    <p class="project-desc">A 3D city navigation game where every road applies a mathematical operation. Players choose green (add) or red (subtract) paths to hit an exact target score — making integer arithmetic spatial, strategic, and embodied.</p>
+                    <div class="project-tech">
+                        <span>Unity + C#</span><span>GDD</span><span>Game Design</span>
+                    </div>
+                    <span class="project-cta">Explore Project →</span>
+                </div>
+            </a>
+
+            <!-- Project 3: Work, Energy & Power -->
+            <a href="learning-design/work-energy-power.html" class="project-card reveal" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.15" style="transition-delay:0.3s">
+                <div class="project-thumb">
+                    <img src="learning-design/assets/wep-hero.png" alt="Work Energy Power MOOC">
+                </div>
+                <div class="project-body">
+                    <div class="project-type">Self-Paced MOOC · eLearning Design</div>
+                    <h3 class="project-title">Work, Energy &amp; Power</h3>
+                    <p class="project-desc">A 6-module self-paced MOOC that builds conceptual clarity before introducing formulas. Real-world scenarios (pushing, lifting, climbing) precede all formal notation — reversing the usual physics instruction sequence.</p>
+                    <div class="project-tech">
+                        <span>MOOC</span><span>Curriculum Design</span><span>Physics</span>
+                    </div>
+                    <span class="project-cta">Explore Project →</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Learning Design Portfolio Banner -->
+        <div class="ld-banner reveal">
+            <div class="ld-banner-text">
+                <h3>Learning Design Portfolio</h3>
+                <p>Each project above has a full case study — with storyboards, design decisions, gameplay mechanics, and reflections. Explore the complete learning design portfolio for deeper detail on all three projects.</p>
+            </div>
+            <a href="learning-design/index.html" class="ld-banner-link">View Full Portfolio →</a>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education">
+        <div class="section-header reveal">
+            <span class="section-num">04.</span>
+            <h2 class="section-title">Education & Certifications</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <div class="edu-wrapper">
+            <!-- Column 1 -->
+            <div>
+                <h3 style="font-family: var(--font-mono); color: var(--accent); margin-bottom: 30px; font-size:1.1rem;">Academic Background</h3>
+                
+                <div class="edu-box reveal">
+                    <h4 class="edu-degree">M.Sc. Mathematics Education</h4>
+                    <p class="edu-uni">Meta University (DU & Jamia Millia Islamia)</p>
+                    <p style="color:var(--text-dim); font-size:0.9rem;">Spearheaded MOOC development, game-based learning initiatives, and completed an intensive internship at NCERT.</p>
+                </div>
+
+                <div class="edu-box reveal">
+                    <h4 class="edu-degree">B.El.Ed (Bachelor of Elementary Education)</h4>
+                    <p class="edu-uni">University of Delhi</p>
+                    <p style="color:var(--text-dim); font-size:0.9rem;">Specialised in pedagogical theory, structured lesson planning, and applied classroom management.</p>
+                </div>
+            </div>
+
+            <!-- Column 2 -->
+            <div>
+                <h3 style="font-family: var(--font-mono); color: var(--accent); margin-bottom: 30px; font-size:1.1rem;">Professional Certifications</h3>
+
+                <div class="edu-box reveal" style="border-left-color: #4ade80;">
+                    <h4 class="edu-degree">CTET Qualified (Paper I & II)</h4>
+                    <p class="edu-uni">Central Board of Secondary Education</p>
+                    <p style="color:var(--text-dim); font-size:0.9rem;">Validation of strong pedagogical foundations and comprehensive K–12 educational frameworks.</p>
+                </div>
+
+                <div class="edu-box reveal" style="border-left-color: #60a5fa;">
+                    <h4 class="edu-degree">NCC 'C' Certificate</h4>
+                    <p class="edu-uni">National Cadet Corps</p>
+                    <p style="color:var(--text-dim); font-size:0.9rem;">Advanced-level training demonstrating distinguished leadership, discipline, and structured teamwork.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="section-header reveal" style="justify-content: center;">
+            <span class="section-num">05.</span>
+            <h2 class="section-title" style="font-size: 2rem;">What's Next?</h2>
+        </div>
+        
+        <h2 class="contact-title reveal">Get In Touch</h2>
+        <p class="contact-desc reveal">
+            I am currently open to new opportunities in Instructional Design, EdTech content creation, and Mathematics Education. Whether you have a question or just want to say hi, my inbox is always open!
+        </p>
+        
+        <a href="mailto:aditiguptay15@gmail.com" class="btn btn-primary reveal" style="font-size: 1.1rem; padding: 18px 40px;">Say Hello</a>
+
+        <div class="social-links reveal">
+            <a href="mailto:aditiguptay15@gmail.com">Email</a>
+            <a href="tel:9354999820">Phone</a>
+            <a href="https://www.linkedin.com/in/aditi-gupta-a05a05228" target="_blank">LinkedIn</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>Designed & Built for Aditi Gupta</p>
+        <p style="margin-top: 10px; font-size: 0.7rem;">Mathematics Educator & Instructional Designer · Delhi, India</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Vanta.js 3D Network Background
+        VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0xfca311,
+            backgroundColor: 0x0a1128,
+            points: 12.00,
+            maxDistance: 22.00,
+            spacing: 18.00,
+            showDots: true
+        });
+
+        // VanillaTilt is auto-initialized on elements with data-tilt attribute
+        // Initialized via script import for skill badges and project cards
+
+        // Custom Cursor Logic
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+
+        window.addEventListener('mousemove', function (e) {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Adding slight delay to outline for smooth follow effect
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Enlarge cursor on hoverable elements
+        const hoverables = document.querySelectorAll('a, .btn, .skill-badge, .project-card');
+        hoverables.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorOutline.style.width = '60px';
+                cursorOutline.style.height = '60px';
+                cursorOutline.style.backgroundColor = 'rgba(252, 163, 17, 0.1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorOutline.style.width = '40px';
+                cursorOutline.style.height = '40px';
+                cursorOutline.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // Scroll Progress Bar
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("myBar").style.width = scrolled + "%";
+        };
+
+        // Scroll Reveal Animation
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // Stop observing once revealed
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        });
+
+        revealElements.forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // Navbar blur effect on scroll
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.style.boxShadow = '0 10px 30px -10px rgba(2,12,27,0.7)';
+                nav.style.padding = '15px 48px';
+            } else {
+                nav.style.boxShadow = 'none';
+                nav.style.padding = '24px 48px';
+            }
+        });
+    </script>
+</body>
+</html>

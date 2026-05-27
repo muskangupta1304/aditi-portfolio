@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Design Portfolio — Aditi Gupta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.waves.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+  <style>
+    :root{--bg:#0a1128;--bg2:#050814;--accent:#fca311;--light:#e6f1ff;--dim:#8892b0;--hf:'Lora',serif;--bf:'Outfit',sans-serif;--mf:'Fira Code',monospace;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--light);font-family:var(--bf);overflow-x:hidden;cursor:none;}
+    ::selection{background:var(--accent);color:var(--bg2);}
+    .cursor-dot,.cursor-outline{position:fixed;pointer-events:none;z-index:10000;transform:translate(-50%,-50%);}
+    .cursor-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;}
+    .cursor-outline{width:40px;height:40px;border:1px solid var(--accent);border-radius:50%;z-index:9999;transition:width .2s,height .2s,background .2s;}
+    .prog{position:fixed;top:0;left:0;width:100%;height:3px;z-index:9998;background:transparent;}
+    .prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),#ffcf7a);width:0%;box-shadow:0 0 10px var(--accent);}
+    nav{position:fixed;top:0;width:100%;padding:18px 48px;display:flex;justify-content:space-between;align-items:center;z-index:1000;background:rgba(10,17,40,0.65);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);transition:padding .3s;}
+    .nav-back{font-family:var(--mf);font-size:.8rem;color:var(--dim);text-decoration:none;transition:color .3s;}
+    .nav-back:hover{color:var(--accent);}
+    .nav-links{display:flex;gap:24px;list-style:none;}
+    .nav-links a{font-family:var(--mf);font-size:.78rem;color:var(--dim);text-decoration:none;transition:color .3s;position:relative;}
+    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--accent);transition:width .3s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--accent);}
+    .nav-links a:hover::after,.nav-links a.active::after{width:100%;}
+    #vbg{position:absolute;inset:0;z-index:0;}
+    #hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 10%;z-index:1;}
+    .hero-badge{font-family:var(--mf);font-size:.82rem;color:var(--accent);border:1px solid rgba(252,163,17,.3);padding:6px 18px;border-radius:50px;margin-bottom:24px;display:inline-block;background:rgba(252,163,17,.05);opacity:0;animation:fadeUp .8s .2s forwards;}
+    .hero-title{font-family:var(--hf);font-size:clamp(2.5rem,5.5vw,4.8rem);font-weight:700;line-height:1.1;margin-bottom:22px;opacity:0;animation:fadeUp .8s .4s forwards;background:linear-gradient(135deg,#fff 0%,#a8b2d1 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .hero-title em{font-style:italic;background:linear-gradient(135deg,#fca311 0%,#ffcf7a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .hero-sub{font-size:1.1rem;line-height:1.7;color:var(--dim);max-width:560px;margin:0 auto 40px;opacity:0;animation:fadeUp .8s .6s forwards;}
+    .scroll-hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeIn 1s 1.2s forwards;}
+    .scroll-hint span{font-family:var(--mf);font-size:.68rem;color:var(--dim);letter-spacing:2px;text-transform:uppercase;}
+    .scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--accent),transparent);animation:pulse 2s infinite;}
+    section{padding:90px 8%;}
+    .reveal{opacity:0;transform:translateY(30px);transition:all .7s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .sec-label{font-family:var(--mf);font-size:.78rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;display:block;}
+    .sec-title{font-family:var(--hf);font-size:2.2rem;color:var(--light);margin-bottom:14px;}
+    .sec-desc{color:var(--dim);font-size:1rem;line-height:1.7;max-width:580px;}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.05);border-radius:16px;overflow:hidden;max-width:860px;margin:0 auto 90px;}
+    .stat{background:var(--bg);padding:36px 16px;text-align:center;}
+    .stat-n{font-family:var(--hf);font-size:2.6rem;color:var(--accent);font-weight:700;display:block;margin-bottom:6px;}
+    .stat-l{font-family:var(--mf);font-size:.72rem;color:var(--dim);letter-spacing:1px;text-transform:uppercase;}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:1100px;margin:0 auto;}
+    .card{position:relative;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);transition:all .4s ease;cursor:none;text-decoration:none;display:flex;flex-direction:column;}
+    .card:hover{border-color:rgba(252,163,17,.3);box-shadow:0 25px 70px rgba(0,0,0,.5),0 0 30px rgba(252,163,17,.07);transform:translateY(-6px);}
+    .card-img{width:100%;height:220px;overflow:hidden;position:relative;}
+    .card-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+    .card-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(10,17,40,.9) 100%);}
+    .card:hover .card-img img{transform:scale(1.06);}
+    .card-body{padding:26px 28px 28px;flex:1;display:flex;flex-direction:column;}
+    .card-type{font-family:var(--mf);font-size:.7rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+    .card-title{font-family:var(--hf);font-size:1.4rem;color:var(--light);margin-bottom:10px;line-height:1.3;}
+    .card-hook{color:var(--dim);font-size:.93rem;line-height:1.6;flex:1;margin-bottom:18px;}
+    .card-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;}
+    .card-tags span{font-family:var(--mf);font-size:.7rem;color:var(--dim);background:rgba(255,255,255,.05);padding:3px 9px;border-radius:4px;border:1px solid rgba(255,255,255,.07);}
+    .card-cta{font-family:var(--mf);font-size:.83rem;color:var(--accent);display:inline-flex;align-items:center;gap:8px;font-weight:500;transition:gap .3s;}
+    .card:hover .card-cta{gap:14px;}
+    footer{text-align:center;padding:36px;font-family:var(--mf);font-size:.78rem;color:var(--dim);border-top:1px solid rgba(255,255,255,.05);}
+    footer a{color:var(--accent);text-decoration:none;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+    @media(max-width:860px){.grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:600px){nav{padding:14px 20px;}.nav-links{display:none;}section{padding:60px 5%;}}
+  </style>
+</head>
+<body>
+  <div class="cursor-dot"></div>
+  <div class="cursor-outline"></div>
+  <div class="prog"><div class="prog-bar" id="pb"></div></div>
+  <nav id="nav">
+    <a href="../aditi_portfolio.html" class="nav-back">← Back to Portfolio</a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="work-energy-power.html">Work, Energy &amp; Power</a></li>
+      <li><a href="mathematics-behind-nature.html">Mathematics Behind Nature</a></li>
+      <li><a href="calcquest.html">CalcQuest</a></li>
+    </ul>
+  </nav>
+  <div id="vbg"></div>
+  <section id="hero">
+    <div class="hero-badge">Instructional Design · Educational Media · EdTech</div>
+    <h1 class="hero-title">Where <em>Learning</em><br>Meets Design</h1>
+    <p class="hero-sub">A curated collection of instructional design work by Aditi Gupta — educational films, game-based learning, MOOCs, and scenario-driven courses, each built to make abstract ideas feel real.</p>
+    <div class="scroll-hint"><span>Explore Projects</span><div class="scroll-line"></div></div>
+  </section>
+
+  <section>
+    <div class="stats-row reveal">
+      <div class="stat"><span class="stat-n">3</span><span class="stat-l">Projects</span></div>
+      <div class="stat"><span class="stat-n">3+</span><span class="stat-l">Design Formats</span></div>
+      <div class="stat"><span class="stat-n">K–12</span><span class="stat-l">Learner Range</span></div>
+      <div class="stat"><span class="stat-n">∞</span><span class="stat-l">Curiosity</span></div>
+    </div>
+    <div style="text-align:center;margin-bottom:60px;">
+      <span class="sec-label reveal">Portfolio</span>
+      <h2 class="sec-title reveal">Projects I've Designed</h2>
+      <p class="sec-desc reveal" style="margin:0 auto;">Each project began with a question — not a deliverable. What follows is the work of turning that question into a learning experience.</p>
+    </div>
+    <div class="grid">
+      <a href="mathematics-behind-nature.html" class="card reveal" style="transition-delay:.1s" data-tilt data-tilt-max="5" data-tilt-speed="400">
+        <div class="card-img"><img src="../maths beyond/img2.jpg" alt="Students exploring nature"></div>
+        <div class="card-body">
+          <div class="card-type">Educational Film · Visual Storytelling</div>
+          <h3 class="card-title">Mathematics Behind Nature</h3>
+          <p class="card-hook">What if students could see mathematics in the world around them before ever solving an equation? A film that moves from observation to insight.</p>
+          <div class="card-tags"><span>Video Production</span><span>Storyboarding</span><span>Grades 6–10</span></div>
+          <span class="card-cta">Explore Project →</span>
+        </div>
+      </a>
+      <a href="calcquest.html" class="card reveal" style="transition-delay:.2s" data-tilt data-tilt-max="5" data-tilt-speed="400">
+        <div class="card-img"><img src="../calcquest/img1.jpg" alt="CalcQuest game screenshot"></div>
+        <div class="card-body">
+          <div class="card-type">Game-Based Learning · Unity C#</div>
+          <h3 class="card-title">CalcQuest: Integer Operations Game</h3>
+          <p class="card-hook">What if every wrong move in maths was just the beginning of a smarter strategy? A city navigation game where every route is a calculation.</p>
+          <div class="card-tags"><span>Unity + C#</span><span>GDD</span><span>Grades 6–8</span></div>
+          <span class="card-cta">Explore Project →</span>
+        </div>
+      </a>
+      <a href="work-energy-power.html" class="card reveal" style="transition-delay:.3s" data-tilt data-tilt-max="5" data-tilt-speed="400">
+        <div class="card-img"><img src="assets/wep-hero.png" alt="Work Energy Power MOOC"></div>
+        <div class="card-body">
+          <div class="card-type">Self-Paced MOOC · eLearning Design</div>
+          <h3 class="card-title">Work, Energy &amp; Power</h3>
+          <p class="card-hook">What if physics stopped being formulas on a page — and became something you could trace, connect, and build step by step?</p>
+          <div class="card-tags"><span>MOOC</span><span>Curriculum Design</span><span>Physics</span></div>
+          <span class="card-cta">Explore Project →</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <p>Part of <a href="../aditi_portfolio.html">Aditi Gupta's Portfolio</a> · Mathematics Educator &amp; Instructional Designer</p>
+    <p style="margin-top:8px;font-size:.7rem;">Delhi, India · aditiguptay15@gmail.com</p>
+  </footer>
+  <script>
+    VANTA.WAVES({el:"#vbg",mouseControls:true,touchControls:true,minHeight:200,minWidth:200,color:0x0d1a3a,shininess:30,waveHeight:15,waveSpeed:0.7,zoom:0.85});
+    const dot=document.querySelector('.cursor-dot'),out=document.querySelector('.cursor-outline');
+    window.addEventListener('mousemove',e=>{dot.style.left=e.clientX+'px';dot.style.top=e.clientY+'px';out.animate({left:e.clientX+'px',top:e.clientY+'px'},{duration:500,fill:'forwards'});});
+    document.querySelectorAll('a,.card').forEach(el=>{el.addEventListener('mouseenter',()=>{out.style.width='60px';out.style.height='60px';out.style.backgroundColor='rgba(252,163,17,.1)';});el.addEventListener('mouseleave',()=>{out.style.width='40px';out.style.height='40px';out.style.backgroundColor='transparent';});});
+    window.addEventListener('scroll',()=>{const s=document.documentElement.scrollTop,h=document.documentElement.scrollHeight-document.documentElement.clientHeight;document.getElementById('pb').style.width=(s/h*100)+'%';document.getElementById('nav').style.padding=window.scrollY>50?'12px 48px':'18px 48px';});
+    const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+    document.querySelectorAll('.reveal,.card').forEach(el=>obs.observe(el));
+  </script>
+</body>
+</html>
