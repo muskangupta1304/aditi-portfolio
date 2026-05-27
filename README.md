@@ -4,7 +4,9 @@ A creative portfolio showcasing UI/UX and learning design work.
 
 ## 🌐 Live Website
 
-👉 **[Click here to view the portfolio](https://khushigupta1304.github.io/aditi-portfolio/aditi_portfolio.html)**
+## [➡️ Click here to open the portfolio](https://khushigupta1304.github.io/aditi-portfolio/aditi_portfolio.html)
+
+---
 
 ## 📁 Projects
 
