@@ -872,6 +872,55 @@
             animation-direction: reverse;
         }
 
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 200;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--text-light);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+
+        /* Mobile Nav Overlay */
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 98;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .nav-overlay.open {
+            display: block;
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
             .about-grid, .edu-wrapper {
@@ -889,14 +938,42 @@
         }
 
         @media (max-width: 768px) {
+            nav {
+                padding: 16px 24px;
+            }
+            .hamburger {
+                display: flex;
+            }
             .nav-links {
-                display: none;
+                display: flex;
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 75%;
+                max-width: 300px;
+                height: 100vh;
+                background: rgba(5, 8, 20, 0.98);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 90px 40px 40px;
+                gap: 28px;
+                z-index: 99;
+                transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                border-left: 1px solid rgba(255, 255, 255, 0.07);
+            }
+            .nav-links.open {
+                right: 0;
+            }
+            .nav-links a {
+                font-size: 1.1rem;
             }
             .hero-title {
                 font-size: 2.5rem;
             }
             .btn-group {
                 flex-direction: column;
+                gap: 12px;
             }
             .timeline::before {
                 left: 15px;
@@ -906,6 +983,68 @@
             }
             .timeline-icon {
                 left: 6px;
+            }
+            #contact {
+                padding: 80px 5% 100px;
+            }
+            .social-links {
+                gap: 16px;
+                flex-wrap: wrap;
+            }
+            section {
+                padding: 70px 5%;
+            }
+        }
+
+        /* Disable custom cursor on touch devices */
+        @media (hover: none) and (pointer: coarse) {
+            body {
+                cursor: auto;
+            }
+            .cursor-dot,
+            .cursor-outline {
+                display: none !important;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 480px) {
+            nav {
+                padding: 14px 18px;
+            }
+            .hero-title {
+                font-size: 1.9rem;
+            }
+            .hero-desc {
+                font-size: 1rem;
+            }
+            .hero-tagline {
+                font-size: 0.85rem;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .section-num {
+                font-size: 1.1rem;
+            }
+            .contact-title {
+                font-size: 2rem;
+            }
+            .btn {
+                padding: 12px 22px;
+                font-size: 0.85rem;
+            }
+            .project-body {
+                padding: 20px;
+            }
+            .timeline-item {
+                padding: 20px 20px 20px 45px;
+            }
+            .exp-title {
+                font-size: 1.2rem;
+            }
+            footer {
+                padding: 20px 16px;
             }
         }
     </style>
@@ -926,14 +1065,20 @@
         <a href="#" class="nav-logo">
             <span>∑</span> Aditi.
         </a>
-        <ul class="nav-links">
-            <li><a href="#about">01. About</a></li>
-            <li><a href="#experience">02. Experience</a></li>
-            <li><a href="#projects">03. Projects</a></li>
-            <li><a href="#education">04. Education</a></li>
-            <li><a href="#contact">05. Contact</a></li>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="#about" class="nav-link">01. About</a></li>
+            <li><a href="#experience" class="nav-link">02. Experience</a></li>
+            <li><a href="#projects" class="nav-link">03. Projects</a></li>
+            <li><a href="#education" class="nav-link">04. Education</a></li>
+            <li><a href="#contact" class="nav-link">05. Contact</a></li>
         </ul>
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
+    <div class="nav-overlay" id="nav-overlay"></div>
 
     <!-- Hero Section with Vanta.js Background -->
     <div id="vanta-bg"></div>
@@ -1214,7 +1359,8 @@
 
     <!-- Scripts -->
     <script>
-        // Initialize Vanta.js 3D Network Background
+        // Initialize Vanta.js — lighter on mobile for better performance
+        const isMobileDevice = window.innerWidth <= 768;
         VANTA.NET({
             el: "#vanta-bg",
             mouseControls: true,
@@ -1226,45 +1372,82 @@
             scaleMobile: 1.00,
             color: 0xfca311,
             backgroundColor: 0x0a1128,
-            points: 12.00,
-            maxDistance: 22.00,
-            spacing: 18.00,
+            points: isMobileDevice ? 6.00 : 12.00,
+            maxDistance: isMobileDevice ? 16.00 : 22.00,
+            spacing: isMobileDevice ? 26.00 : 18.00,
             showDots: true
         });
 
-        // VanillaTilt is auto-initialized on elements with data-tilt attribute
-        // Initialized via script import for skill badges and project cards
-
-        // Custom Cursor Logic
+        // Custom Cursor Logic (desktop only)
+        const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
         const cursorDot = document.querySelector('.cursor-dot');
         const cursorOutline = document.querySelector('.cursor-outline');
 
-        window.addEventListener('mousemove', function (e) {
-            const posX = e.clientX;
-            const posY = e.clientY;
+        if (!isTouchDevice) {
+            window.addEventListener('mousemove', function (e) {
+                const posX = e.clientX;
+                const posY = e.clientY;
 
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
 
-            // Adding slight delay to outline for smooth follow effect
-            cursorOutline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
-            }, { duration: 500, fill: "forwards" });
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+
+            // Enlarge cursor on hoverable elements
+            const hoverables = document.querySelectorAll('a, .btn, .skill-badge, .project-card');
+            hoverables.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorOutline.style.width = '60px';
+                    cursorOutline.style.height = '60px';
+                    cursorOutline.style.backgroundColor = 'rgba(252, 163, 17, 0.1)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorOutline.style.width = '40px';
+                    cursorOutline.style.height = '40px';
+                    cursorOutline.style.backgroundColor = 'transparent';
+                });
+            });
+        }
+
+        // Disable VanillaTilt on touch devices
+        if (isTouchDevice) {
+            document.querySelectorAll('[data-tilt]').forEach(el => {
+                el.removeAttribute('data-tilt');
+                el.removeAttribute('data-tilt-glare');
+                el.style.transform = 'none';
+            });
+        }
+
+        // Hamburger Menu Toggle
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('nav-links');
+        const navOverlay = document.getElementById('nav-overlay');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('open');
+            navOverlay.classList.toggle('open');
+            document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
         });
 
-        // Enlarge cursor on hoverable elements
-        const hoverables = document.querySelectorAll('a, .btn, .skill-badge, .project-card');
-        hoverables.forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursorOutline.style.width = '60px';
-                cursorOutline.style.height = '60px';
-                cursorOutline.style.backgroundColor = 'rgba(252, 163, 17, 0.1)';
-            });
-            el.addEventListener('mouseleave', () => {
-                cursorOutline.style.width = '40px';
-                cursorOutline.style.height = '40px';
-                cursorOutline.style.backgroundColor = 'transparent';
+        navOverlay.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('open');
+            navOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        });
+
+        // Close nav on link click (mobile)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('open');
+                navOverlay.classList.remove('open');
+                document.body.style.overflow = '';
             });
         });
 
@@ -1283,7 +1466,7 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    observer.unobserve(entry.target); // Stop observing once revealed
+                    observer.unobserve(entry.target);
                 }
             });
         }, {
@@ -1295,16 +1478,17 @@
             revealObserver.observe(el);
         });
 
-        // Navbar blur effect on scroll
+        // Navbar blur effect on scroll (mobile-aware padding)
         const nav = document.querySelector('nav');
+        const getNavPadding = (scrolled) => {
+            if (window.innerWidth <= 480) return '14px 18px';
+            if (window.innerWidth <= 768) return '16px 24px';
+            return scrolled ? '15px 48px' : '24px 48px';
+        };
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                nav.style.boxShadow = '0 10px 30px -10px rgba(2,12,27,0.7)';
-                nav.style.padding = '15px 48px';
-            } else {
-                nav.style.boxShadow = 'none';
-                nav.style.padding = '24px 48px';
-            }
+            const scrolled = window.scrollY > 50;
+            nav.style.boxShadow = scrolled ? '0 10px 30px -10px rgba(2,12,27,0.7)' : 'none';
+            nav.style.padding = getNavPadding(scrolled);
         });
     </script>
 </body>
